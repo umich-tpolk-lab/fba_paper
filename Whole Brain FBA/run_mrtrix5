@@ -1,0 +1,10 @@
+#!/bin/bash
+
+start=$(pwd)
+
+cd ../template
+
+fixelcfestats -mask CSFmask_fixel.mif fd filenames.txt designmatrix.txt contrast.txt tracks_2_million_sift.tck stats_fd -force
+fixelcfestats -mask CSFmask_fixel.mif log_fc filenames.txt designmatrix.txt contrast.txt tracks_2_million_sift.tck stats_log_fc -force
+fixelcfestats -mask CSFmask_fixel.mif fdc filenames.txt designmatrix.txt contrast.txt tracks_2_million_sift.tck stats_fdc -force
+
