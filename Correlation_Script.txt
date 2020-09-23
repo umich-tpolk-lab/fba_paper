@@ -1,0 +1,55 @@
+﻿FAdir=/c/Users/shann/OneDrive/Desktop/Correlation_Figure/Old/FA
+CXdir=/c/Users/shann/OneDrive/Desktop/Correlation_Figure/Old/CX
+
+
+Z_FA=/c/Users/shann/OneDrive/Desktop/Correlation_Figure/Old/Z_FA
+Z_CX=/c/Users/shann/OneDrive/Desktop/Correlation_Figure/Old/Z_CX
+
+
+FA=$(ls $FAdir/*.mif) 
+CX=$(ls $CXdir/*.mif)   
+
+
+cd $FAdir
+mkdir stats
+mrmath $FA mean stats/FAmean.mif
+mrmath $FA std stats/FAstd.mif 
+
+
+mkdir $Z_FA
+foreach *.mif : mrcalc $FAdir/NAME stats/FAmean.mif -subtract stats/FAstd.mif -divide $Z_FA/NAME
+
+
+cd $CXdir
+mkdir stats
+mrmath $CX mean stats/CXmean.mif   
+mrmath $CX std stats/CXstd.mif
+
+
+mkdir $Z_CX
+foreach *.mif : mrcalc $CXdir/NAME stats/CXmean.mif -subtract stats/CXstd.mif -divide $Z_CX/NAME
+
+
+COV=/c/Users/shann/OneDrive/Desktop/Correlation_Figure/Old/temp
+mkdir $COV
+foreach $Z_FA/*.mif :  mrcalc  $Z_FA/NAME $Z_CX/NAME -mult $COV/NAME
+
+
+FILES=($(ls $COV)) 
+FILES1=(${FILES[@]:0:2})
+FILES2=(${FILES[@]:3})
+
+
+CMD="${FILES1[@]} -add ${FILES2[@]/%/ -add}"
+
+
+cd /c/Users/shann/OneDrive/Desktop/Correlation_Figure/Old/temp
+
+
+mrcalc $CMD 44 -div R.mif 
+
+
+mrcalc R.mif ../../fullmask.mif -mult R_masked.mif
+
+
+mrcalc R_masked.mif -neg R_neg.mif
