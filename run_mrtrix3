@@ -1,0 +1,51 @@
+#!/bin/bash
+
+start=$(pwd)
+
+for dir in $(ls -d mind[oy]???) ; do
+	cd $dir
+	mrregister  wmfod.mif -mask1 dwi_mask_upsampled.mif \
+	../../template/wmfod_template.mif -nl_warp subject2template_warp.mif \
+	template2subject_warp.mif
+	mrtransform  dwi_mask_upsampled.mif -warp subject2template_warp.mif \
+	-interp nearest -datatype bit dwi_mask_in_template_space.mif
+	cd /scratch/lsa_flux/kelleyes/mind
+done
+
+mrmath */dwi_mask_in_template_space.mif min ../template/template_mask.mif \
+ -datatype bit
+	
+fod2fixel -mask ../template/template_mask.mif -fmls_peak_value 0.15 \
+ ../template/wmfod_template.mif ../template/fixel_mask
+
+
+for dir in $(ls -d mind[oy]???) ; do
+        cd $dir
+	mrtransform wmfod.mif -warp subject2template_warp.mif \
+	-noreorientation fod_in_template_space_NOT_REORIENTED.mif
+	fod2fixel -mask ../../template/template_mask.mif \
+	fod_in_template_space_NOT_REORIENTED.mif \
+	fixel_in_template_space_NOT_REORIENTED -afd fd.mif
+	fixelreorient fixel_in_template_space_NOT_REORIENTED \
+	subject2template_warp.mif fixel_in_template_space
+	fixelcorrespondence fixel_in_template_space/fd.mif \
+	 ../../template/fixel_mask ../../template/fd $dir.mif
+	warp2metric subject2template_warp.mif -fc \
+	../../template/fixel_mask ../../template/fc $dir.mif
+	cd /scratch/lsa_flux/kelleyes/mind
+done
+
+mkdir ../template/log_fc
+cp ../template/fc/index.mif ../template/fc/directions.mif ../template/log_fc
+mkdir ../template/fdc
+cp ../template/fc/index.mif ../template/fdc
+cp ../template/fc/directions.mif ../template/fdc
+
+for dir in $(ls -d mind[oy]???) ; do
+	cd $dir
+	mrcalc ../../template/fc/$dir.mif -log ../../template/log_fc/$dir.mif
+	mrcalc ../../template/fd/$dir.mif ../../template/fc/$dir.mif -mult \
+	../../template/fdc/$dir.mif
+	cd /scratch/lsa_flux/kelleyes/mind
+done
+

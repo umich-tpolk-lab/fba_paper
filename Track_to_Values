@@ -1,0 +1,27 @@
+# Mrtrix command used to creating Tracts
+# The two include and one exclude .mif were created manually in mrview
+
+tckedit -include R_roi_include1.mif -include R_roi_include2.mif tracks_20_million.tck -exclude R_roi_exclude.mif Rret_track.tck
+
+
+
+# Commands to transform track file into a mask for both fixels and voxels
+
+tck2fixel Cingulum_ret/Rret_track.tck path/to/input/ Cingulum_ret/ R_Cingulum_TDI.mif 
+mrthreshold -abs  42.04 Cingulum_ret/R_Cingulum_TDI.mif Cingulum_ret/R_Cingulum_mask.mif 
+fixel2voxel Cingulum_ret/R_Cingulum_mask.mif mean Cingulum_ret/R_fa_track.mif
+
+
+
+
+# Mask out PVE and extract mean FDC for given tract
+
+mrcalc Cingulum_ret/R_Cingulum_mask.mif path/to/pvedata/CSFmask_fixel.mif -mult Cingulum_ret/R_Cingulum_mask2.mif
+foreach Data_FBA/template/fdc/* : mrstats IN -output mean -mask  Cingulum_ret/Tract_Masks/R_Cingulum_mask2.mif >> Cingulum_ret/R_fdcvalues.txt
+
+
+
+# Mask out PVE and extract FA for given tract
+
+mrcalc Cingulum_ret/R_fa_track.mif path/to/pvedata/csfmask.mif -mult Cingulum_ret/R_fa_track2.mif
+foreach Data_FA/* : mrstats IN/ -output mean -mask  Cingulum_ret/R_fa_track2.mif >> Cingulum_ret/R_complexvalues.txt

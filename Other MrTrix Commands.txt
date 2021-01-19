@@ -1,0 +1,37 @@
+
+# Mrtrix commands used to get FA files
+
+mrtransform dwi_biascorrected_normalised_upsampled.mif -warp subject2template_warp.mif dwi_template_space.mif
+dwi2tensor dwi_template_space.mif tensor.mif -mask template_mask.mif
+tensor2metric tensor.mif  -fa FA_in_template_space.mif
+
+
+# Mrtrix commands used to get CX files
+
+fixel2voxel Ifixel_in_template_space/fd.mif complexity complexity.mif
+mrconvert -coord 3 0 complexity.mif com_vol1.mif
+
+
+# Commands for whole brain VBA
+
+mrfilter FA_in_template_space.mif smooth FA_smooth.mif
+mrclusterstats -negative filenames.txt design.txt contrast.txt csfmask.mif fa_
+
+
+# Other things in mrtrix (significance mask, number of voxels, etc)
+
+mrthreshold fa_fwe_pvalue.mif -abs 0.95 mask.mif
+foreach ./* : mrdump IN/FA_in_template_space.mif -mask ../mask.mif IN/fa_mask.txt
+mrthreshold fa_fwe_pvalue.mif -abs 0.95 - | mrstats fa_fwe_pvalue_neg.mif -mask - -output count
+
+
+# Visualization commands
+# Done on the fwe_pvalue file and the std_effect file for streamline visualization
+#Visualize fixel
+
+fixel2tsf fixel.mif tracks_2_million_sift.tck fixel.tsf
+
+#Visualize voxel
+
+voxel2fixel fa_fwe_pvalue.mif input fa_pvalue_fixel.mif
+fixel2tsf fa_pvalue_fixel.mif tracks_2_million_sift.tck fa_pvalue.tsf
