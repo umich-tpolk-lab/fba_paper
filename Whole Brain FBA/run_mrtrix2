@@ -1,5 +1,0 @@
-#!/bin/bash
-
-
-population_template -nthreads 8 ../template/fod_input -mask_dir \
-../template/mask_input ../template/wmfod_template.mif -voxel_size 1.3
