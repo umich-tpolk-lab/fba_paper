@@ -14,7 +14,7 @@ A repository of code used in Shannon Kelley's paper "Age-related differences in 
 - Cohen.m shows how Cohen's D was found for a tract
 - Visualize shows the commands used to visualize tracts for the figures
 
-# FA controlled for CX 
+# FA-CX Correction
 - Functions/scripts for FA-CX correlation correction
 - pregress1.m corrects for correlations across subjects;
 - pregress2.m then corrects for correlations across voxels.
